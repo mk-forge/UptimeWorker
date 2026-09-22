@@ -22,6 +22,8 @@ export interface Translations {
   majorOutage: string
   down: string
   noData: string
+  incompleteHistory: string
+  incompleteHistoryExplanation: string
   uptime: string
   daysAgo: string
   today: string

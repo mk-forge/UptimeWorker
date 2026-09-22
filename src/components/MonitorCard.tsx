@@ -4,6 +4,7 @@ import { Monitor } from '../data/monitors'
 import { cn } from '@/lib/utils'
 import { Language, getTranslations } from '../i18n/translations'
 import MonitorDetails from './MonitorDetails'
+import { calculateDailyUptime, type DailyHistoryPoint } from '../lib/monitorHistory'
 import { ChevronDown, ExternalLink } from 'lucide-react'
 import {
   calculateUptime,
@@ -144,11 +145,6 @@ function StatusTimeline({ history, getDateLabel, language }: StatusTimelineProps
   )
 }
 
-interface DailyHistoryPoint {
-  date: string // YYYY-MM-DD
-  status: MonitorStatus
-}
-
 interface RecentCheck {
   t: string // timestamp ISO
   s: MonitorStatus // status
@@ -178,6 +174,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
   const t = getTranslations(language)
   const [expanded, setExpanded] = useState(false)
   const [period, setPeriod] = useState<TimelinePeriod>('1h')
+  const now = Date.now()
   const hasData = data !== undefined
 
   // Determine status with tri-state support
@@ -204,8 +201,11 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
   const calculateUptimeFromChecks = (checks: RecentCheck[], hoursBack: number): number | null => {
     if (!hasData) return null
 
-    const cutoff = Date.now() - hoursBack * 60 * 60 * 1000
-    const relevantChecks = checks.filter((check) => new Date(check.t).getTime() >= cutoff)
+    const cutoff = now - hoursBack * 60 * 60 * 1000
+    const relevantChecks = checks.filter((check) => {
+      const time = new Date(check.t).getTime()
+      return time >= cutoff && time <= now
+    })
     if (relevantChecks.length === 0) return null
 
     return calculateUptime(relevantChecks.map((check) => check.s), status, uptimeOptions)
@@ -214,10 +214,10 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
   const calculateUptimeFromHistory = (history: DailyHistoryPoint[], period: '7d' | '30d'): number | null => {
     if (!hasData) return null
 
-    const relevantHistory = filterDailyHistoryInPeriod(history, period)
+    const relevantHistory = filterDailyHistoryInPeriod(history, period, now)
     if (relevantHistory.length === 0) return null
 
-    return calculateUptime(relevantHistory.map((day) => day.status), status, uptimeOptions)
+    return calculateDailyUptime(relevantHistory, uptimeOptions)
   }
 
   const uptimeForPeriod = (() => {
@@ -248,12 +248,16 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
         recentChecks: data.recentChecks,
         dailyHistory: data.dailyHistory,
         intervalMinutes: checkIntervalMinutes,
+        now,
       })
     : Array<BarStatus>(getEffectiveBucketCount(period, checkIntervalMinutes)).fill('unknown')
 
+  const incompleteHistory = hasData && uptimeForPeriod === null &&
+    (period === '7d' || period === '30d') &&
+    filterDailyHistoryInPeriod(data.dailyHistory || [], period, now).length > 0
+
   // Chaque tooltip décrit la position temporelle du bucket dans le filtre sélectionné.
   const getBarTooltip = (index: number) => {
-    const now = new Date()
     const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : 'en-US'
 
     if (period === '1h') {
@@ -266,8 +270,9 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
     } else {
       const daysToShow = period === '7d' ? 7 : 30
       const msPerBar = (daysToShow * 24 * 60 * 60 * 1000) / BAR_COUNT
-      const barTime = now.getTime() - (BAR_COUNT - 1 - index) * msPerBar
+      const barTime = now - (BAR_COUNT - index) * msPerBar
       return new Date(barTime).toLocaleDateString(locale, {
+        timeZone: 'UTC',
         month: 'short',
         day: 'numeric',
       })
@@ -349,8 +354,8 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
               </span>
             )}
             {hasData && uptimeForPeriod === null && (
-              <span className="text-xs font-medium text-muted-foreground sm:text-sm">
-                {t.noData}
+              <span className="text-xs font-medium text-muted-foreground sm:text-sm" title={incompleteHistory ? t.incompleteHistoryExplanation : undefined}>
+                {incompleteHistory ? t.incompleteHistory : t.noData}
               </span>
             )}
           </div>

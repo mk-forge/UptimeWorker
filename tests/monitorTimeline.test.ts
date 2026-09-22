@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { calculateUptime } from '../src/lib/status'
+import { appendDailyCheck, calculateDailyUptime, normalizeCheckCounts, type DailyHistoryPoint } from '../src/lib/monitorHistory'
+import { normalizeMonitorData } from '../src/lib/monitorData'
 import {
   buildTimelineHistory,
   filterDailyHistoryInPeriod,
@@ -11,6 +13,53 @@ import {
 
 const NOW = Date.parse('2026-07-16T18:00:00.000Z')
 const MINUTE = 60 * 1000
+
+test('daily availability counts observations, not days without any incident', () => {
+  let history: DailyHistoryPoint[] = []
+  for (let i = 0; i < 99; i++) history = appendDailyCheck(history, '2026-09-19T12:00:00Z', 'operational')
+  history = appendDailyCheck(history, '2026-09-19T13:00:00Z', 'down')
+  history = appendDailyCheck(history, '2026-09-20T12:00:00Z', 'operational')
+  assert.equal(history[0].status, 'down')
+  assert.equal(calculateDailyUptime(history), 100 / 101 * 100)
+  const normalized = normalizeMonitorData({ lastCheck: '2026-09-20T12:00:00Z', dailyHistory: history })!
+  assert.deepEqual(normalized.dailyHistory, history)
+})
+
+test('legacy days remain visible without inventing availability or mutating history', () => {
+  const legacy: DailyHistoryPoint[] = [{ date: '2026-09-16', status: 'down' }]
+  const history = appendDailyCheck(legacy, '2026-09-20T12:00:00Z', 'operational')
+  assert.equal(calculateDailyUptime(history), null)
+  assert.deepEqual(legacy, [{ date: '2026-09-16', status: 'down' }])
+  const sameDay = appendDailyCheck(legacy, '2026-09-16T13:00:00Z', 'operational')
+  assert.equal(sameDay[0].counts, undefined)
+  assert.equal(sameDay[0].status, 'down')
+  assert.equal(calculateDailyUptime(filterDailyHistoryInPeriod(history, '7d', Date.parse('2026-09-24T12:00:00Z'))), 100)
+})
+
+test('daily counts preserve degraded and maintenance policy', () => {
+  let history = appendDailyCheck([], '2026-09-20T12:00:00Z', 'degraded')
+  history = appendDailyCheck(history, '2026-09-20T12:05:00Z', 'maintenance')
+  assert.equal(calculateDailyUptime(history), 50)
+  assert.equal(calculateDailyUptime(history, { degradedCountsAsDown: false }), 100)
+})
+
+test('invalid daily counters cannot produce a percentage', () => {
+  for (const operational of [-1, NaN, Infinity, 1.5, Number.MAX_SAFE_INTEGER]) {
+    assert.equal(normalizeCheckCounts({ operational, down: 1, degraded: 0, maintenance: 0 }), undefined)
+  }
+  assert.equal(normalizeCheckCounts({ operational: 2 }), undefined)
+  assert.equal(calculateDailyUptime([]), null)
+})
+
+test('long windows exclude future days', () => {
+  assert.deepEqual(filterDailyHistoryInPeriod([{ date: '2026-07-17', status: 'down' }], '7d', NOW), [])
+})
+
+test('a check exactly at now belongs to the last timeline bucket', () => {
+  const history = buildTimelineHistory({ period: '1h', currentStatus: 'down', now: NOW,
+    recentChecks: [{ t: new Date(NOW).toISOString(), s: 'down' }] })
+  assert.equal(history.at(-1), 'incident')
+})
 
 function checksEveryMinute() {
   return Array.from({ length: TIMELINE_BUCKET_COUNT }, (_, index) => ({

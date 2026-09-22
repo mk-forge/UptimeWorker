@@ -16,6 +16,8 @@ export const fr: Translations = {
     majorOutage: 'Panne majeure',
     down: 'Hors ligne',
     noData: 'Aucune donnée',
+    incompleteHistory: 'Historique incomplet',
+    incompleteHistoryExplanation: 'Les anciens statuts sont conservés, mais les nombres de contrôles réussis et échoués manquent pour calculer la disponibilité.',
     uptime: 'disponibilité',
     daysAgo: 'Il y a 90 jours',
     today: "Aujourd'hui",

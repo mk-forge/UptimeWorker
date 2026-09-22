@@ -16,6 +16,8 @@ export const en: Translations = {
     majorOutage: 'Major outage',
     down: 'Down',
     noData: 'No data',
+    incompleteHistory: 'Incomplete history',
+    incompleteHistoryExplanation: 'Previous statuses are preserved, but successful and failed check counts are missing to calculate availability.',
     uptime: 'uptime',
     daysAgo: '90 days ago',
     today: 'Today',

@@ -1,4 +1,6 @@
 import { type MonitorStatus } from './status'
+import { normalizeCheckCounts, type DailyHistoryPoint } from './monitorHistory'
+export type { DailyHistoryPoint } from './monitorHistory'
 
 export const MAX_PUBLIC_MONITORS = 100
 // Borne haute défensive côté parser UI : la prod tronque déjà via
@@ -11,11 +13,6 @@ export interface RecentCheck {
   t: string
   s: MonitorStatus
   rt?: number
-}
-
-export interface DailyHistoryPoint {
-  date: string
-  status: MonitorStatus
 }
 
 export interface MonitorData {
@@ -83,7 +80,8 @@ function normalizeDailyHistory(value: unknown): DailyHistoryPoint[] | undefined 
       return []
     }
 
-    return [{ date, status: record.status }]
+    const counts = normalizeCheckCounts(record.counts)
+    return [{ date, status: record.status, ...(counts ? { counts } : {}) }]
   }).slice(-MAX_DAILY_HISTORY)
 }
 

@@ -60,7 +60,8 @@ export function filterDailyHistoryInPeriod<T extends { date: string; status: Mon
   now = Date.now(),
 ): T[] {
   const windowStart = getPeriodWindowStartDate(period, now)
-  return history.filter((day) => day.date >= windowStart)
+  const windowEnd = new Date(now).toISOString().split('T')[0]
+  return history.filter((day) => day.date >= windowStart && day.date <= windowEnd)
 }
 
 function mapStatusToBar(status: MonitorStatus): TimelineBarStatus {
@@ -124,11 +125,11 @@ export function buildTimelineHistory({
     for (let index = 0; index < bucketCount; index++) {
       const bucketStart = cutoff + index * bucketDuration
       const bucketEnd = bucketStart + bucketDuration
-      if (bucketEnd <= monitoringStart) continue
+      if (bucketEnd <= monitoringStart && !(index === bucketCount - 1 && monitoringStart === now)) continue
 
       const bucketChecks = relevantChecks.filter((check) => {
         const checkTime = toTimestamp(check.t)!
-        return checkTime >= bucketStart && checkTime < bucketEnd
+        return checkTime >= bucketStart && (checkTime < bucketEnd || (index === bucketCount - 1 && checkTime === now))
       })
       if (bucketChecks.length > 0) lastKnownStatus = aggregateChecks(bucketChecks)
       if (lastKnownStatus !== undefined) bars[index] = lastKnownStatus

@@ -16,6 +16,8 @@ export const uk: Translations = {
     majorOutage: 'Аварія',
     down: 'Збій',
     noData: 'Немає даних',
+    incompleteHistory: 'Неповна історія',
+    incompleteHistoryExplanation: 'Попередні статуси збережено, але для розрахунку доступності бракує кількості успішних і невдалих перевірок.',
     uptime: 'аптайм',
     daysAgo: '90 днів тому',
     today: 'Сьогодні',

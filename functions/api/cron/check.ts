@@ -8,14 +8,13 @@
 
 import monitorsConfig from '../../../monitors.json'
 import {
-  calculateUptime,
   classifyMonitorStatus,
-  getWorstStatus,
   hasCloudflareChallengeHeaders,
   hasCloudflareTransitHeaders,
   isCloudflareChallengeStatus,
   type MonitorStatus,
 } from '../../../src/lib/status'
+import { appendDailyCheck, calculateDailyUptime, type DailyHistoryPoint } from '../../../src/lib/monitorHistory'
 import {
   fetchMonitorSafely,
   mapWithConcurrency,
@@ -131,17 +130,9 @@ async function checkMonitor(monitor: Monitor, userAgent: string): Promise<{
   }
 }
 
-// Max 30 days of daily history
-const MAX_HISTORY_DAYS = 30
-
 // Calculate max recent checks based on interval (24h worth of checks)
 function getMaxRecentChecks(intervalMinutes: number): number {
   return Math.ceil((24 * 60) / intervalMinutes)
-}
-
-// Get today's date as YYYY-MM-DD
-function getTodayDate(): string {
-  return new Date().toISOString().split('T')[0]
 }
 
 export const onRequest = async (context: any) => {
@@ -176,7 +167,6 @@ export const onRequest = async (context: any) => {
 
   try {
     const existingData = await KV_STATUS_PAGE.get('monitors', { type: 'json' }) as Record<string, any> || {}
-    const today = getTodayDate()
 
     const results = await mapWithConcurrency(
       monitors,
@@ -192,22 +182,13 @@ export const onRequest = async (context: any) => {
         const updatedChecks = [...previousChecks, { t: result.lastCheck, s: result.status, rt: result.responseTime }]
           .slice(-maxRecentChecks)
 
-        // 2. Daily history: 1 entry per day with worst status (for 3d/7d/30d filters)
-        const previousHistory: Array<{ date: string; status: MonitorStatus }> = existing?.dailyHistory || []
-        let updatedHistory = [...previousHistory]
-
-        const lastEntry = updatedHistory[updatedHistory.length - 1]
-        if (lastEntry && lastEntry.date === today) {
-          lastEntry.status = getWorstStatus(lastEntry.status, result.status)
-        } else {
-          updatedHistory.push({ date: today, status: result.status })
-        }
-        updatedHistory = updatedHistory.slice(-MAX_HISTORY_DAYS)
+        // 2. Preserve the worst daily status and count actual observations separately.
+        const previousHistory: DailyHistoryPoint[] = existing?.dailyHistory || []
+        const updatedHistory = appendDailyCheck(previousHistory, result.lastCheck, result.status)
 
         // Calculate uptime from daily history
-        const uptime = calculateUptime(
-          updatedHistory.map((entry) => entry.status),
-          result.status,
+        const uptime = calculateDailyUptime(
+          updatedHistory,
           { degradedCountsAsDown: monitor.degradedCountsAsDown !== false }
         )
 
@@ -215,7 +196,7 @@ export const onRequest = async (context: any) => {
           id: monitor.id,
           ...result,
           startDate,
-          uptime: parseFloat(uptime.toFixed(3)),
+          uptime: uptime === null ? null : Number(uptime.toFixed(3)),
           recentChecks: updatedChecks,
           dailyHistory: updatedHistory
         }

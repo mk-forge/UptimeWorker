@@ -5,7 +5,8 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { loadEnv } from 'vite'
 import { isMaintenanceActive } from './src/lib/maintenance.ts'
-import { calculateUptime, classifyMonitorStatus, getWorstStatus, hasCloudflareChallengeHeaders, hasCloudflareTransitHeaders, isCloudflareChallengeStatus } from './src/lib/status.ts'
+import { classifyMonitorStatus, hasCloudflareChallengeHeaders, hasCloudflareTransitHeaders, isCloudflareChallengeStatus } from './src/lib/status.ts'
+import { appendDailyCheck, calculateDailyUptime } from './src/lib/monitorHistory.ts'
 import { fetchMonitorSafely, mapWithConcurrency, parseCheckInterval, readResponseTextPrefix } from './src/lib/monitorRequest.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -21,7 +22,6 @@ const CHECK_INTERVAL_MINUTES = parseCheckInterval(
   1,
 )
 if (!CHECK_INTERVAL_MINUTES) throw new Error('CRON_CHECK_INTERVAL must be an integer between 1 and 1440')
-const MAX_HISTORY_DAYS = 30
 const MAX_CONCURRENT_CHECKS = 5
 
 // Load branding config
@@ -113,10 +113,6 @@ function getMaxRecentChecks(intervalMinutes) {
   return Math.ceil((24 * 60) / intervalMinutes)
 }
 
-function getTodayDate() {
-  return new Date().toISOString().split('T')[0]
-}
-
 // Fonction de vérification
 async function checkMonitor(monitor) {
   const startTime = Date.now()
@@ -178,7 +174,6 @@ async function runChecks() {
   // { type: 'json' } parse la valeur stockée (comme la prod CF), sinon
   // existingData[monitor.id] serait undefined et on écraserait l'historique.
   const existingData = KV.get('monitors', { type: 'json' }) || {}
-  const today = getTodayDate()
   const maxRecentChecks = getMaxRecentChecks(CHECK_INTERVAL_MINUTES)
 
   const results = await mapWithConcurrency(
@@ -204,20 +199,9 @@ async function runChecks() {
         .slice(-maxRecentChecks)
 
       const previousHistory = existing?.dailyHistory || []
-      let updatedHistory = [...previousHistory]
-      const lastEntry = updatedHistory[updatedHistory.length - 1]
-
-      if (lastEntry && lastEntry.date === today) {
-        lastEntry.status = getWorstStatus(lastEntry.status, result.status)
-      } else {
-        updatedHistory.push({ date: today, status: result.status })
-      }
-
-      updatedHistory = updatedHistory.slice(-MAX_HISTORY_DAYS)
-
-      const uptime = calculateUptime(
-        updatedHistory.map((entry) => entry.status),
-        result.status,
+      const updatedHistory = appendDailyCheck(previousHistory, result.lastCheck, result.status)
+      const uptime = calculateDailyUptime(
+        updatedHistory,
         { degradedCountsAsDown: monitor.degradedCountsAsDown !== false }
       )
 
@@ -225,7 +209,7 @@ async function runChecks() {
         id: monitor.id,
         ...result,
         startDate,
-        uptime: parseFloat(uptime.toFixed(3)),
+        uptime: uptime === null ? null : Number(uptime.toFixed(3)),
         recentChecks: updatedChecks,
         dailyHistory: updatedHistory,
       }
