@@ -1,13 +1,37 @@
 [
   {
-    "id": "uptimeworker-status",
-    "name": "UptimeWorker",
-    "description": "Status page monitoring service",
-    "url": "https://uptimeworker.net",
+    "id": "portfolio",
+    "name": "Portfolio",
+    "url": "https://portfolio.mk-forge.workers.dev",
     "method": "GET",
-    "acceptedStatusCodes": ["200-299", "301", "302"],
-    "followRedirect": true,
-    "linkable": true,
-    "acceptCloudflareChallenge": false
+    "acceptedStatusCodes": ["200-299"]
+  },
+  {
+    "id": "set-intersection",
+    "name": "Set Intersection",
+    "url": "https://set-intersection.mk-forge.workers.dev",
+    "method": "GET",
+    "acceptedStatusCodes": ["200-299"]
+  },
+  {
+    "id": "ttm-frontend",
+    "name": "Table Tennis Manager (FE)",
+    "url": "https://table-tennis-manager-3se.pages.dev",
+    "method": "GET",
+    "acceptedStatusCodes": ["200-299"]
+  },
+  {
+    "id": "ttm-backend",
+    "name": "Table Tennis Manager (BE)",
+    "url": "https://ttm-backend-latest.onrender.com/players",
+    "method": "GET",
+    "acceptedStatusCodes": ["200-299"]
+  },
+  {
+    "id": "ttm-db",
+    "name": "Table Tennis Manager (DB)",
+    "url": "https://ttm-db-check.mk-forge.workers.dev",
+    "method": "GET",
+    "acceptedStatusCodes": ["200-299"]
   }
 ]
