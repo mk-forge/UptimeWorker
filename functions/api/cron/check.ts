@@ -33,6 +33,14 @@ interface Monitor {
   acceptCloudflareChallenge?: boolean
 }
 
+interface Env {
+  KV_STATUS_PAGE: KVNamespace
+  CRON_SECRET: string
+  CRON_CHECK_INTERVAL?: string
+  MONITOR_USER_AGENT?: string
+  MAKE_WEBHOOK_URL?: string
+}
+
 const monitors: Monitor[] = monitorsConfig as Monitor[]
 const MAX_CONCURRENT_CHECKS = 5
 let checkRunInProgress = false
@@ -210,6 +218,29 @@ export const onRequest = async (context: any) => {
 
     await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
     await KV_STATUS_PAGE.put('lastUpdate', new Date().toISOString())
+
+    let downMonitors = results.filter(r => r.status == 'down')
+
+    if (downMonitors.length > 0 && context.env.MAKE_WEBHOOK_URL) {
+      try {
+        await fetch(context.env.MAKE_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'monitor_down',
+            timestamp: new Date().toISOString(),
+            monitors: downMonitors.map(mon => ({
+              id: mon.id,
+              name: monitors.find(monitor => monitor.id == mon.id)?.name || mon.id,
+              status: mon.status,
+              responseTime: mon.responseTime,
+            })),
+          }),
+        })
+      } catch (err) {
+        console.error('Make webhook failed:', err)
+      }
+    }
 
     return new Response(JSON.stringify({
       success: true,
