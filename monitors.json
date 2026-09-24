@@ -33,5 +33,12 @@
     "url": "https://ttm-db-check.mk-forge.workers.dev",
     "method": "GET",
     "acceptedStatusCodes": ["200-299"]
+  },
+  {
+    "id": "test-down",
+    "name": "Testovací výpadek",
+    "url": "https://cccccccccccccccccccccccccccccccccccccccccccc.com",
+    "method": "GET",
+    "acceptedStatusCodes": ["200-299"]
   }
 ]
