@@ -16,11 +16,11 @@ export default function Footer({ language }: FooterProps) {
   const version = packageJson.version
 
   return (
-    <footer className="mt-16 border-t border-border/60 bg-background/95 backdrop-blur-md">
+    <footer className="border-t border-border/60 bg-background/95 backdrop-blur-md">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <div className="py-6">
           <div className="text-center space-y-4">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
               <p className="text-sm text-foreground/60">
                 © {currentYear} {branding.companyName}. {t.allRightsReserved}
               </p>
@@ -58,7 +58,7 @@ export default function Footer({ language }: FooterProps) {
             </div>
 
             {/* GitHub & Donation */}
-            <div className="flex flex-wrap justify-center items-center gap-2 pt-2">
+            <div className="flex flex-wrap justify-center items-center">
               {branding.githubUrl && (
                 <a
                   href={branding.githubUrl}
@@ -92,20 +92,6 @@ export default function Footer({ language }: FooterProps) {
                   {language === 'en' ? 'Sponsor' : 'Soutenir'}
                 </a>
               )}
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1 text-xs text-foreground/45">
-              <span>{language === 'en' ? 'Made with' : 'Créé avec'}</span>
-              <Heart className="h-3.5 w-3.5 text-pink-500" fill="currentColor" />
-              <span>{language === 'en' ? 'in France by' : 'en France par'}</span>
-              <a
-                href="https://github.com/slymb"
-                className="text-foreground/60 hover:text-foreground/90 hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                github.com/slymb
-              </a>
             </div>
           </div>
         </div>

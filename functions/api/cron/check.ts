@@ -219,7 +219,7 @@ export const onRequest = async (context: any) => {
     await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
     await KV_STATUS_PAGE.put('lastUpdate', new Date().toISOString())
 
-    let downMonitors = results.filter(r => r.status == 'down')
+    let downMonitors = results.filter(result => result.status == 'down')
 
     if (downMonitors.length > 0 && context.env.MAKE_WEBHOOK_URL) {
       try {
@@ -229,11 +229,11 @@ export const onRequest = async (context: any) => {
           body: JSON.stringify({
             event: 'monitor_down',
             timestamp: new Date().toISOString(),
-            monitors: downMonitors.map(mon => ({
-              id: mon.id,
-              name: monitors.find(monitor => monitor.id == mon.id)?.name || mon.id,
-              status: mon.status,
-              responseTime: mon.responseTime,
+            monitors: downMonitors.map(downMonitor => ({
+              id: downMonitor.id,
+              name: monitors.find(monitor => monitor.id == downMonitor.id)?.name || downMonitor.id,
+              status: downMonitor.status,
+              responseTime: downMonitor.responseTime,
             })),
           }),
         })

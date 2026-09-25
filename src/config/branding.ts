@@ -56,31 +56,29 @@ export interface BrandingConfig {
 
 export const branding: BrandingConfig = {
   // Company Info
-  companyName: 'UptimeWorker',
-  projectName: 'UptimeWorker',
-  projectDescription: 'Modern status page monitoring system',
+  companyName: 'mk-forge',
+  projectName: 'Status Page',
+  projectDescription: 'Status page for my projects',
 
   // URLs
-  websiteUrl: 'https://uptimeworker.net',
-  websiteDomain: 'uptimeworker.net',
+  websiteUrl: 'https://mk-forge-status.pages.dev',
+  websiteDomain: 'mk-forge-status.pages.dev',
 
   // Contact
-  supportEmail: 'support@example.com',
+  supportEmail: '',
 
   // Social Links
-  githubUrl: 'https://github.com/uptimeworker/uptimeworker',
-  buymeacoffeeUrl: 'https://buymeacoffee.com/slym',
-  donationUrl: 'https://github.com/sponsors/slymb',
+  githubUrl: 'https://github.com/mk-forge',
 
   // Footer Links
   links: {
-    about: '/about',
-    terms: '/terms',
-    privacy: '/privacy',
+    about: '',
+    terms: '',
+    privacy: '',
   },
 
   // Technical
-  userAgent: 'UptimeWorker-Monitor/1.0',
+  userAgent: 'MK-Status-Monitor/1.0',
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

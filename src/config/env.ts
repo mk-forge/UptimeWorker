@@ -5,7 +5,7 @@ export function getSettings(): Settings {
   return {
     title: import.meta.env.VITE_STATUS_TITLE || 'UptimeWorker',
     url: 'https://status.example.com', // Not from VITE_ (backend only)
-    logo: import.meta.env.VITE_STATUS_LOGO || '/logo.webp',
+    logo: import.meta.env.VITE_STATUS_LOGO || '/logo.svg',
     daysInHistogram: parseInt(import.meta.env.VITE_HISTORY_DAYS) || 90,
     collectResponseTimes: true,
     allmonitorsOperational: 'All Systems Operational',
