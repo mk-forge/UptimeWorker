@@ -4,7 +4,7 @@ Status page for my projects, built on Cloudflare.
 
 ## Overview
 
-Fork of UptimeWorker with custom modifications. It monitors my projects (Portfolio, Set Intersection, Table Tennis Manager), splits TTM into FE/BE/DB for granular monitoring and sends push notifications via ntfy on downtime. Granular monitoring for TTM (FE/BE/DB) added some complexity, but it was worth it because I can see exactly which part is failing without having to dig through logs. Make handles notification sending, since Cloudflare Workers can't talk to ntfy directly.
+Fork of UptimeWorker with custom modifications. It monitors my projects (Portfolio, Set Intersection, Table Tennis Manager) and splits TTM into FE/BE/DB for granular monitoring. The granular split was a bit of a pain to set up, but now I can see exactly which part is failing. Cloudflare Workers can't talk to ntfy directly, so Make sits in between for push notifications on downtime.
 
 ## Tech stack
 
@@ -20,10 +20,10 @@ Fork of UptimeWorker with custom modifications. It monitors my projects (Portfol
 
 ## Screenshots
 
-![Status page](screenshots/status-page.png)
-![Status page detail](screenshots/status-page-detail.png)
-![Make.com automation](screenshots/make-automation.png)
-![Notification](screenshots/notification.png)
+![Status page](https://raw.githubusercontent.com/mk-forge/status-page/main/Screenshots/status_page.png)
+![Status page detail](https://raw.githubusercontent.com/mk-forge/status-page/main/Screenshots/status_page_detail.png)
+![Make automation](https://raw.githubusercontent.com/mk-forge/status-page/main/Screenshots/make_automation.png)
+![Ntfy notification](https://raw.githubusercontent.com/mk-forge/status-page/main/Screenshots/ntfy_notification.png)
 
 ## Credits
 
