@@ -1,10 +1,10 @@
 # Status Page
 
-Status page for my projects, built on Cloudflare.
+Status page for my projects built on Cloudflare.
 
 ## Overview
 
-Fork of UptimeWorker with custom modifications. It monitors my projects (Portfolio, Set Intersection, Table Tennis Manager) and splits TTM into FE/BE/DB for granular monitoring. The granular split was a bit of a pain to set up, but now I can see exactly which part is failing. Cloudflare Workers can't talk to ntfy directly, so Make sits in between for push notifications on downtime.
+Fork of UptimeWorker with custom modifications. It monitors my projects (Portfolio, Set Intersection, Table Tennis Manager) and splits TTM into FE/BE/DB for granular monitoring. The granular split was a bit of a pain to set up, but now I can see exactly which part is failing. And for notifications I use Make as a bridge between Cloudflare Workers and ntfy, since they can't talk to each other directly.
 
 ## Tech stack
 
