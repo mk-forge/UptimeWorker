@@ -161,7 +161,7 @@
   }
 
   .status-timeline-day-unknown {
-    @apply bg-muted;
+    @apply bg-muted-foreground/30;
   }
 
   /* Tooltip "chip" inline au survol des pilules timeline.

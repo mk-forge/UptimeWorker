@@ -21,77 +21,13 @@ export default function Footer({ language }: FooterProps) {
         <div className="py-6">
           <div className="text-center space-y-4">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
-              <p className="text-sm text-foreground/60">
+              <p className="text-sm text-foreground/80">
                 © {currentYear} {branding.companyName}. {t.allRightsReserved}
               </p>
               <div className="flex items-center gap-2 text-xs text-foreground/40">
                 <span className="hidden sm:inline">•</span>
                 <span>v{version}</span>
               </div>
-            </div>
-
-            <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-sm text-foreground/60">
-              {branding.links.about && (
-                <Link
-                  to={branding.links.about}
-                  className="hover:text-foreground/90 hover:underline"
-                >
-                  {t.about}
-                </Link>
-              )}
-              {branding.links.terms && (
-                <Link
-                  to={branding.links.terms}
-                  className="hover:text-foreground/90 hover:underline"
-                >
-                  {t.terms}
-                </Link>
-              )}
-              {branding.links.privacy && (
-                <Link
-                  to={branding.links.privacy}
-                  className="hover:text-foreground/90 hover:underline"
-                >
-                  {t.privacy}
-                </Link>
-              )}
-            </div>
-
-            {/* GitHub & Donation */}
-            <div className="flex flex-wrap justify-center items-center">
-              {branding.githubUrl && (
-                <a
-                  href={branding.githubUrl}
-                  className={footerActionClass}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Github className="h-3.5 w-3.5" />
-                  GitHub
-                </a>
-              )}
-              {branding.buymeacoffeeUrl && (
-                <a
-                  href={branding.buymeacoffeeUrl}
-                  className={footerActionClass}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Coffee className="w-3.5 h-3.5" />
-                  Buy me a coffee
-                </a>
-              )}
-              {branding.donationUrl && (
-                <a
-                  href={branding.donationUrl}
-                  className={footerActionClass}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Heart className="w-3.5 h-3.5" />
-                  {language === 'en' ? 'Sponsor' : 'Soutenir'}
-                </a>
-              )}
             </div>
           </div>
         </div>
